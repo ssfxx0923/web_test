@@ -1,4 +1,4 @@
-import { sendToLinkAI, sendToClaude, sendToCeok } from './api.js';
+import { sendToLinkAI, sendToClaude, sendToCeok, clearMessageHistory } from './api.js';
 import { GameManager } from './games.js';
 
 // 删除所有其他的 DOMContentLoaded 事件监听器，只保留这一个
@@ -115,7 +115,7 @@ function openGame(e) {
     // 显示游戏框和游戏菜单
     if (gameBox) {
         gameBox.style.display = 'flex';
-        gameMenu.style.display = 'flex';  // 确保游戏菜单显示
+        gameMenu.style.display = 'flex';  // 确保游��菜单显示
         quickButtons.classList.add('hidden');
         footer.classList.add('hidden');
         
@@ -203,7 +203,7 @@ function openChat(e) {
         gameBox.classList.add('collapsed');
     }
     
-    // 显示聊天框，隐藏其他元素
+    // 显示聊天框，隐藏��他元素
     chatBox.style.display = 'flex';
     quickButtons.classList.add('hidden');
     footer.classList.add('hidden');
@@ -221,22 +221,23 @@ function closeChat(e) {
     const socialLinks = document.querySelector('.social-links');
     
     chatBox.classList.add('collapsed');
+    
+    // 清除消息历史
+    clearMessageHistory();
+    
     setTimeout(() => {
         chatBox.style.display = 'none';
         
-        // 显示快捷按钮
         if (quickButtons) {
             quickButtons.classList.remove('hidden');
             quickButtons.style.display = 'flex';
         }
         
-        // 显示页脚
         if (footer) {
             footer.classList.remove('hidden');
             footer.style.display = 'block';
         }
         
-        // 显示社交链接
         if (socialLinks) {
             socialLinks.classList.remove('hidden');
             socialLinks.style.display = 'flex';
@@ -317,11 +318,9 @@ async function handleSendMessage() {
     const chatMessages = document.getElementById('chatMessages');
     
     if (message) {
-        // 清空输入框并重置高度
         userInput.value = '';
         userInput.style.height = 'auto';
         
-        // 创建并添加用户消息
         const userMessageDiv = document.createElement('div');
         userMessageDiv.className = 'message user';
         const userMessageContent = document.createElement('div');
@@ -330,11 +329,9 @@ async function handleSendMessage() {
         userMessageDiv.appendChild(userMessageContent);
         chatMessages.appendChild(userMessageDiv);
         
-        // 滚动到底部
         smoothScrollTo(chatMessages, chatMessages.scrollHeight);
         
         try {
-            // 根据选择的模型调用相应的API
             let response;
             switch(modelSelect.value) {
                 case 'claude':
@@ -347,7 +344,6 @@ async function handleSendMessage() {
                     response = await sendToLinkAI(message, 'session-1');
             }
             
-            // 创建AI回复消息容器
             const aiMessageDiv = document.createElement('div');
             aiMessageDiv.className = 'message system';
             const aiMessageContent = document.createElement('div');
@@ -357,7 +353,6 @@ async function handleSendMessage() {
             
             let fullResponse = '';
             
-            // 处理流式响应
             for await (const chunk of response) {
                 fullResponse += chunk;
                 aiMessageContent.textContent = fullResponse;
@@ -365,7 +360,9 @@ async function handleSendMessage() {
             }
         } catch (error) {
             console.error('Error:', error);
-            // 添加错误消息
+            // 发生错误时清除历史记录
+            clearMessageHistory();
+            
             const errorMessageDiv = document.createElement('div');
             errorMessageDiv.className = 'message system';
             const errorMessageContent = document.createElement('div');
@@ -375,7 +372,6 @@ async function handleSendMessage() {
             chatMessages.appendChild(errorMessageDiv);
         }
         
-        // 最后一次滚动到底部
         smoothScrollTo(chatMessages, chatMessages.scrollHeight);
     }
 }
@@ -592,7 +588,7 @@ function initSnakeGame() {
     let isPaused = false;  // 添加暂停状态标志
     let gameStatus = 'initial';  // 添加游戏状态: 'initial', 'playing', 'paused', 'over'
     
-    // ���始化蛇和食物
+    // 始化蛇和食物
     function init() {
         snake = [
             {x: 200, y: 200},
@@ -683,7 +679,7 @@ function initSnakeGame() {
             toggleGame();
         }
         
-        // 其他方向键控制保持不变
+        // 其他方向键��制保持不变
         if (gameStatus === 'playing') {
             switch(e.key) {
                 case 'ArrowRight':

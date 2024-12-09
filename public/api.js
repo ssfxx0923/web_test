@@ -1,18 +1,33 @@
 const API_URL = '/api/chat';
 
+let messageHistory = [];
+
 async function sendToLinkAI(message, sessionId) {
-    return sendToAI(message, 'linkai');
+    messageHistory.push({
+        role: "user",
+        content: message
+    });
+    
+    return sendToAI(messageHistory, 'linkai');
 }
 
 async function sendToClaude(message, sessionId) {
-    return sendToAI(message, 'claude');
+    messageHistory.push({
+        role: "user",
+        content: message
+    });
+    return sendToAI(messageHistory, 'claude');
 }
 
 async function sendToCeok(message, sessionId) {
-    return sendToAI(message, 'ceok');
+    messageHistory.push({
+        role: "user",
+        content: message
+    });
+    return sendToAI(messageHistory, 'ceok');
 }
 
-async function sendToAI(message, model) {
+async function sendToAI(messages, model) {
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -20,10 +35,7 @@ async function sendToAI(message, model) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                messages: [{
-                    role: "user",
-                    content: message
-                }],
+                messages: messages,
                 model: model
             }),
             credentials: 'same-origin',
@@ -40,6 +52,7 @@ async function sendToAI(message, model) {
         return {
             async *[Symbol.asyncIterator]() {
                 try {
+                    let responseText = '';
                     while (true) {
                         const {done, value} = await reader.read();
                         if (done) break;
@@ -54,7 +67,9 @@ async function sendToAI(message, model) {
                                 try {
                                     const data = JSON.parse(line.slice(6));
                                     if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
-                                        yield data.choices[0].delta.content;
+                                        const content = data.choices[0].delta.content;
+                                        responseText += content;
+                                        yield content;
                                     }
                                 } catch (e) {
                                     console.warn('Failed to parse line:', line, e);
@@ -62,6 +77,12 @@ async function sendToAI(message, model) {
                                 }
                             }
                         }
+                    }
+                    if (responseText) {
+                        messageHistory.push({
+                            role: "assistant",
+                            content: responseText
+                        });
                     }
                 } catch (error) {
                     console.error('Stream error:', error);
@@ -75,4 +96,8 @@ async function sendToAI(message, model) {
     }
 }
 
-export { sendToLinkAI, sendToClaude, sendToCeok };
+function clearMessageHistory() {
+    messageHistory = [];
+}
+
+export { sendToLinkAI, sendToClaude, sendToCeok, clearMessageHistory };
