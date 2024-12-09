@@ -785,7 +785,7 @@ canvas {
     z-index: 1;
 }
 
-/* 确保聊天框打开时快捷按钮���藏 */
+/* 确保聊天框打开时快捷按钮隐藏 */
 .chat-box:not(.collapsed) ~ .quick-buttons .chat-quick-btn {
     display: none;
 }
@@ -1065,14 +1065,18 @@ canvas {
     -webkit-text-fill-color: transparent;
 }
 
-/* 在适当位置添加模型选择器样式 */
+/* 在模型选择器相关样式附近添加 */
 .model-selector {
     position: absolute;
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
+/* 恢复模型选择器的原始样式 */
 .model-select {
     padding: 5px 10px;
     border-radius: 15px;
@@ -1091,4 +1095,34 @@ canvas {
 .model-select option {
     background: #2c2c2c;
     color: white;
+}
+
+/* 清除按钮样式 */
+.clear-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.clear-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.clear-btn i {
+    font-size: 14px;
+}
+
+/* 确保模型选择器和清除按钮在折叠时隐藏 */
+.chat-box.collapsed .model-selector {
+    opacity: 0;
+    pointer-events: none;
 }

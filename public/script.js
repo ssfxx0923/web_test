@@ -107,6 +107,31 @@ document.addEventListener('DOMContentLoaded', () => {
             modelSelect.value = savedModel;
         }
     }
+    
+    // 添加清除按钮功能
+    const clearChatBtn = document.getElementById('clearChat');
+    if (clearChatBtn) {
+        clearChatBtn.addEventListener('click', () => {
+            // 获取当前选中的模型
+            const currentModel = modelSelect.value;
+            
+            // 清除聊天界面
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            
+            // 只保留初始的系统消息
+            const systemMessage = document.createElement('div');
+            systemMessage.className = 'message system';
+            const systemMessageContent = document.createElement('div');
+            systemMessageContent.className = 'message-content';
+            systemMessageContent.textContent = '👋 你好！我是AI助手，很高兴为你服务。';
+            systemMessage.appendChild(systemMessageContent);
+            chatMessages.appendChild(systemMessage);
+            
+            // 清除当前模型的历史记录
+            clearMessageHistory(currentModel);
+        });
+    }
 });
 
 // 删除其他所有的 DOMContentLoaded 事件监听器
@@ -543,7 +568,7 @@ function initSnakeGame() {
     const startBtn = document.getElementById('startSnake');
     const scoreElement = document.getElementById('snakeScore');
     
-    // 设置画布大��
+    // 设置画布大小
     canvas.width = 400;
     canvas.height = 400;
     
@@ -807,7 +832,7 @@ function initSnakeGame() {
             top: -15px;  /* 调整向上延伸的距离 */
             left: -15px;  /* 向左延伸 */
             width: calc(100% + 30px);  /* 增加度 */
-            height: calc(100% + 70px);  /* 调整高度 */
+            height: calc(100% + 70px);  /* 调整高��� */
             background: rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: center;

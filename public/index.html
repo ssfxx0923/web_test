@@ -34,16 +34,19 @@
         <!-- 聊天框 -->
         <div class="chat-box">
             <div class="chat-header">
-                <button id="toggleChat" class="toggle-btn">
-                    <i class="fas fa-times"></i>
-                </button>
                 <div class="model-selector">
                     <select id="modelSelect" class="model-select">
                         <option value="linkai">LinkAI</option>
                         <option value="claude">Claude</option>
                         <option value="ceok">CEOK-2</option>
                     </select>
+                    <button id="clearChat" class="clear-btn" title="清除对话历史">
+                        <i class="fas fa-eraser"></i>
+                    </button>
                 </div>
+                <button id="toggleChat" class="toggle-btn">
+                    <i class="fas fa-times"></i>
+                </button>
                 <div class="chat-icon">
                     <i class="fas fa-comments"></i>
                 </div>
