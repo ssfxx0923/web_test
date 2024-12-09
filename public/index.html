@@ -95,6 +95,10 @@
                                 <i class="fas fa-bomb"></i>
                                 <span>扫雷</span>
                             </div>
+                            <div class="game-option" data-game="schulte">
+                                <i class="fas fa-th"></i>
+                                <span>舒尔特方格</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -123,6 +127,28 @@
                                 <i class="fas fa-redo"></i>
                                 <span>重新开始</span>
                             </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 舒尔特方格游戏 -->
+                    <div id="schulteGame" class="game" style="display: none;">
+                        <div class="schulte-container">
+                            <div class="schulte-header">
+                                <div class="schulte-controls">
+                                    <div class="button-group">
+                                        <button id="startSchulte" class="start-btn">
+                                            <i class="fas fa-play"></i>
+                                            <span>开始</span>
+                                        </button>
+                                        <button id="backToMenu" class="menu-btn">
+                                            <i class="fas fa-arrow-left"></i>
+                                            <span>返回菜单</span>
+                                        </button>
+                                    </div>
+                                    <div class="timer">用时：<span id="schulteTimer">00:00</span></div>
+                                </div>
+                            </div>
+                            <div id="schulteBoard" class="schulte-board"></div>
                         </div>
                     </div>
                 </div>

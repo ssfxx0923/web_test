@@ -186,37 +186,49 @@ function closeGame(e) {
     const gameMenu = document.querySelector('.game-menu');
     const snakeGame = document.getElementById('snakeGame');
     const minesweeperGame = document.getElementById('minesweeperGame');
+    const schulteGame = document.getElementById('schulteGame');
     
     // 隐藏所有游戏界面
     snakeGame.style.display = 'none';
     minesweeperGame.style.display = 'none';
+    schulteGame.style.display = 'none';
+    
+    // 重置舒尔特游戏状态
+    const timerDisplay = document.getElementById('schulteTimer');
+    const startBtn = document.getElementById('startSchulte');
+    if (timerDisplay) timerDisplay.textContent = '00:00';
+    if (startBtn) startBtn.innerHTML = '<i class="fas fa-play"></i><span>开始</span>';
     
     // 显示游戏菜单
-    gameMenu.style.display = 'flex';
+    if (gameMenu) {
+        gameMenu.style.display = 'flex';
+    }
     
     // 关闭游戏框
-    gameBox.classList.add('collapsed');
-    setTimeout(() => {
-        gameBox.style.display = 'none';
-        
-        // 显示快捷按钮
-        if (quickButtons) {
-            quickButtons.classList.remove('hidden');
-            quickButtons.style.display = 'flex';
-        }
-        
-        // 显示页脚
-        if (footer) {
-            footer.classList.remove('hidden');
-            footer.style.display = 'block';
-        }
-        
-        // 显示社交链接
-        if (socialLinks) {
-            socialLinks.classList.remove('hidden');
-            socialLinks.style.display = 'flex';
-        }
-    }, 300);
+    if (gameBox) {
+        gameBox.classList.add('collapsed');
+        setTimeout(() => {
+            gameBox.style.display = 'none';
+            
+            // 显示快捷按钮
+            if (quickButtons) {
+                quickButtons.classList.remove('hidden');
+                quickButtons.style.display = 'flex';
+            }
+            
+            // 显示页脚
+            if (footer) {
+                footer.classList.remove('hidden');
+                footer.style.display = 'block';
+            }
+            
+            // 显示社交链接
+            if (socialLinks) {
+                socialLinks.classList.remove('hidden');
+                socialLinks.style.display = 'flex';
+            }
+        }, 300);
+    }
 }
 
 // 绑定游戏按钮事件
@@ -357,7 +369,7 @@ function initChatEvents() {
     });
 }
 
-// 修改发送消息函数
+// 修改���送消息函数
 async function handleSendMessage() {
     const userInput = document.getElementById('userInput');
     const modelSelect = document.getElementById('modelSelect');
@@ -514,26 +526,26 @@ function initGameOptions() {
     const gameMenu = document.querySelector('.game-menu');
     const games = {
         snake: document.getElementById('snakeGame'),
-        minesweeper: document.getElementById('minesweeperGame')
+        minesweeper: document.getElementById('minesweeperGame'),
+        schulte: document.getElementById('schulteGame')
     };
 
     gameOptions.forEach(option => {
         option.addEventListener('click', () => {
             const gameType = option.getAttribute('data-game');
             
-            // 隐藏游戏菜单
             gameMenu.style.display = 'none';
             
-            // 隐藏所有游戏，只显示选中的游戏
             Object.keys(games).forEach(game => {
                 games[game].style.display = game === gameType ? 'flex' : 'none';
             });
 
-            // 初始化选中的游戏
             if (gameType === 'snake') {
                 initSnakeGame();
             } else if (gameType === 'minesweeper') {
                 initMinesweeperGame();
+            } else if (gameType === 'schulte') {
+                initSchulteGame();
             }
         });
     });
@@ -572,7 +584,7 @@ function initSnakeGame() {
     canvas.width = 400;
     canvas.height = 400;
     
-    // 创建一个容器来包含蛇的所有部分
+    // 创建一个容器来包含蛇的所有分
     const gameContainer = document.createElement('div');
     gameContainer.style.position = 'relative';
     gameContainer.style.width = '400px';
@@ -832,7 +844,7 @@ function initSnakeGame() {
             top: -15px;  /* 调整向上延伸的距离 */
             left: -15px;  /* 向左延伸 */
             width: calc(100% + 30px);  /* 增加度 */
-            height: calc(100% + 70px);  /* 调整高��� */
+            height: calc(100% + 70px);  /* 调整高 */
             background: rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: center;
@@ -875,14 +887,42 @@ function initMinesweeperGame() {
     const startBtn = document.getElementById('startMinesweeper');
     const minesLeftElement = document.getElementById('minesLeft');
     
-    const BOARD_SIZE = 16;  // 改为16x16的棋盘
-    const MINES_COUNT = 40;  // 增加雷数量
+    const BOARD_SIZE = 16;
+    const MINES_COUNT = 40;
     let minesLeft = MINES_COUNT;
     let cells = [];
     let mines = [];
     let gameOver = false;
     let isFirstClick = true;
     
+    // 添加空格键事件监听
+    function handleSpaceKey(e) {
+        if (e.code === 'Space') {
+            e.preventDefault(); // 防止页面滚动
+            initBoard(); // 重置游戏
+        }
+    }
+
+    // 添加键盘事件监听
+    document.addEventListener('keydown', handleSpaceKey);
+    
+    // 在游戏界面被隐藏时移除事件监听
+    const minesweeperGame = document.getElementById('minesweeperGame');
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                if (minesweeperGame.style.display === 'none') {
+                    document.removeEventListener('keydown', handleSpaceKey);
+                    gameOver = true; // 确保游戏停止
+                } else {
+                    document.addEventListener('keydown', handleSpaceKey);
+                }
+            }
+        });
+    });
+    
+    observer.observe(minesweeperGame, { attributes: true });
+
     // 初始化游戏板
     function initBoard() {
         board.innerHTML = '';
@@ -938,6 +978,7 @@ function initMinesweeperGame() {
             for (let j = -1; j <= 1; j++) {
                 const newRow = row + i;
                 const newCol = col + j;
+                
                 if (newRow >= 0 && newRow < BOARD_SIZE && 
                     newCol >= 0 && newCol < BOARD_SIZE) {
                     if (mines.some(mine => mine.row === newRow && mine.col === newCol)) {
@@ -1130,9 +1171,191 @@ function initMinesweeperGame() {
     `;
     document.head.appendChild(style);
     
-    // 开始游戏按钮
-    startBtn.addEventListener('click', initBoard);
+    // 修改开始按钮事件监听
+    startBtn.addEventListener('click', () => {
+        initBoard();
+    });
+
+    // 修改返回按钮事件
+    const returnBtn = document.querySelector('#minesweeperGame .return-btn');
+    if (returnBtn) {
+        returnBtn.addEventListener('click', () => {
+            // 清理事件监听器
+            document.removeEventListener('keydown', handleSpaceKey);
+            observer.disconnect();
+            
+            // 隐藏扫雷游戏界面
+            minesweeperGame.style.display = 'none';
+            // 显示游戏菜单
+            document.querySelector('.game-menu').style.display = 'flex';
+        });
+    }
+
+    // 初始化游戏
+    initBoard();
+}
+
+// 添加舒尔特方格游戏初始化函数
+function initSchulteGame() {
+    const board = document.getElementById('schulteBoard');
+    const startBtn = document.getElementById('startSchulte');
+    const timerDisplay = document.getElementById('schulteTimer');
     
+    let numbers = [];
+    let currentNumber = 1;
+    let timerInterval = null;
+    let startTime = null;
+    let isPlaying = false;
+    
+    // 添加空格键事件监听
+    function handleSpaceKey(e) {
+        if (e.code === 'Space') {
+            e.preventDefault(); // 防止页面滚动
+            if (!isPlaying) {
+                startGame();
+            } else {
+                // 如果游戏正在进行，则重置游戏
+                stopGame();
+                startGame();
+            }
+        }
+    }
+
+    // 添加键盘事件监听
+    document.addEventListener('keydown', handleSpaceKey);
+    
+    // 在游戏界面被隐藏时移除事件监听
+    const schulteGame = document.getElementById('schulteGame');
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                if (schulteGame.style.display === 'none') {
+                    document.removeEventListener('keydown', handleSpaceKey);
+                    if (isPlaying) {
+                        stopGame();
+                    }
+                } else {
+                    document.addEventListener('keydown', handleSpaceKey);
+                }
+            }
+        });
+    });
+    
+    observer.observe(schulteGame, { attributes: true });
+
+    // 初始化棋盘
+    function initBoard() {
+        numbers = Array.from({length: 25}, (_, i) => i + 1);
+        shuffleArray(numbers);
+        
+        board.innerHTML = '';
+        numbers.forEach(num => {
+            const cell = document.createElement('div');
+            cell.className = 'schulte-cell';
+            cell.textContent = num;
+            cell.addEventListener('click', () => handleCellClick(cell, num));
+            board.appendChild(cell);
+        });
+        
+        currentNumber = 1;
+        updateTimer(0);
+        isPlaying = false;
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        startBtn.innerHTML = '<i class="fas fa-play"></i><span>开始</span>';
+    }
+    
+    // Fisher-Yates 洗牌算法
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+    
+    // 处理点击事件
+    function handleCellClick(cell, number) {
+        if (!isPlaying) return;
+        
+        if (number === currentNumber) {
+            cell.classList.add('correct');
+            currentNumber++;
+            
+            if (currentNumber > 25) {
+                stopGame();
+            }
+        } else {
+            cell.classList.add('wrong');
+            setTimeout(() => cell.classList.remove('wrong'), 500);
+        }
+    }
+    
+    // 更新计时器显示
+    function updateTimer(time) {
+        const minutes = Math.floor(time / 60000);
+        const seconds = Math.floor((time % 60000) / 1000);
+        timerDisplay.textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    // 开始游戏
+    function startGame() {
+        initBoard();
+        isPlaying = true;
+        startTime = Date.now();
+        startBtn.innerHTML = '<i class="fas fa-redo"></i><span>重置</span>';
+        
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (isPlaying) {
+                updateTimer(Date.now() - startTime);
+            }
+        }, 100);
+    }
+    
+    // 停止游戏
+    function stopGame() {
+        isPlaying = false;
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        startBtn.innerHTML = '<i class="fas fa-play"></i><span>开始</span>';
+    }
+    
+    // 绑定开始按钮事件
+    startBtn.addEventListener('click', () => {
+        if (!isPlaying) {
+            startGame();
+        } else {
+            stopGame();
+            startGame();
+        }
+    });
+    
+    // 绑定返回菜单按钮事件
+    const backToMenuBtn = document.getElementById('backToMenu');
+    if (backToMenuBtn) {
+        backToMenuBtn.addEventListener('click', () => {
+            // 停止当前游戏
+            if (isPlaying) {
+                stopGame();
+            }
+            
+            // 隐藏舒尔特游戏界面
+            document.getElementById('schulteGame').style.display = 'none';
+            
+            // 显示游戏菜单
+            document.querySelector('.game-menu').style.display = 'flex';
+            
+            // 清理事件监听器
+            document.removeEventListener('keydown', handleSpaceKey);
+            observer.disconnect();
+        });
+    }
+
     // 初始化游戏
     initBoard();
 }
@@ -1160,4 +1383,3 @@ function preloadImages() {
         img.src = url;
     });
 }
-
