@@ -76,7 +76,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelSelect = document.getElementById('modelSelect');
     if (modelSelect) {
         modelSelect.addEventListener('change', () => {
-            localStorage.setItem('selectedModel', modelSelect.value);
+            const previousModel = localStorage.getItem('selectedModel');
+            const newModel = modelSelect.value;
+            
+            // 保存新选择的模型
+            localStorage.setItem('selectedModel', newModel);
+            
+            // 清除聊天界面
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            
+            // 只保留初始的系统消息
+            const systemMessage = document.createElement('div');
+            systemMessage.className = 'message system';
+            const systemMessageContent = document.createElement('div');
+            systemMessageContent.className = 'message-content';
+            systemMessageContent.textContent = '👋 你好！我是AI助手，很高兴为你服务。';
+            systemMessage.appendChild(systemMessageContent);
+            chatMessages.appendChild(systemMessage);
+            
+            // 清除之前模型的历史记录
+            if (previousModel) {
+                clearMessageHistory(previousModel);
+            }
         });
         
         // 恢复上次选择的模型
@@ -115,7 +137,7 @@ function openGame(e) {
     // 显示游戏框和游戏菜单
     if (gameBox) {
         gameBox.style.display = 'flex';
-        gameMenu.style.display = 'flex';  // 确保游��菜单显示
+        gameMenu.style.display = 'flex';  // 确保游戏菜单显示
         quickButtons.classList.add('hidden');
         footer.classList.add('hidden');
         
@@ -203,7 +225,7 @@ function openChat(e) {
         gameBox.classList.add('collapsed');
     }
     
-    // 显示聊天框，隐藏��他元素
+    // 显示聊天框，隐藏其他元素
     chatBox.style.display = 'flex';
     quickButtons.classList.add('hidden');
     footer.classList.add('hidden');
@@ -521,7 +543,7 @@ function initSnakeGame() {
     const startBtn = document.getElementById('startSnake');
     const scoreElement = document.getElementById('snakeScore');
     
-    // 设置画布大小
+    // 设置画布大��
     canvas.width = 400;
     canvas.height = 400;
     
@@ -679,7 +701,7 @@ function initSnakeGame() {
             toggleGame();
         }
         
-        // 其他方向键��制保持不变
+        // 其他方向键制保持不变
         if (gameStatus === 'playing') {
             switch(e.key) {
                 case 'ArrowRight':

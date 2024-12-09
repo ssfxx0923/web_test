@@ -1,30 +1,35 @@
 const API_URL = '/api/chat';
 
-let messageHistory = [];
+// 修改为每个模型独立的消息历史
+const messageHistories = {
+    'linkai': [],
+    'claude': [],
+    'ceok': []
+};
 
 async function sendToLinkAI(message, sessionId) {
-    messageHistory.push({
+    messageHistories.linkai.push({
         role: "user",
         content: message
     });
     
-    return sendToAI(messageHistory, 'linkai');
+    return sendToAI(messageHistories.linkai, 'linkai');
 }
 
 async function sendToClaude(message, sessionId) {
-    messageHistory.push({
+    messageHistories.claude.push({
         role: "user",
         content: message
     });
-    return sendToAI(messageHistory, 'claude');
+    return sendToAI(messageHistories.claude, 'claude');
 }
 
 async function sendToCeok(message, sessionId) {
-    messageHistory.push({
+    messageHistories.ceok.push({
         role: "user",
         content: message
     });
-    return sendToAI(messageHistory, 'ceok');
+    return sendToAI(messageHistories.ceok, 'ceok');
 }
 
 async function sendToAI(messages, model) {
@@ -78,8 +83,9 @@ async function sendToAI(messages, model) {
                             }
                         }
                     }
+                    // 将AI的回复添加到对应模型的历史记录中
                     if (responseText) {
-                        messageHistory.push({
+                        messageHistories[model].push({
                             role: "assistant",
                             content: responseText
                         });
@@ -96,8 +102,16 @@ async function sendToAI(messages, model) {
     }
 }
 
-function clearMessageHistory() {
-    messageHistory = [];
+// 修改清除历史记录函数，可以指定清除特定模型的历史记录
+function clearMessageHistory(model = null) {
+    if (model && messageHistories[model]) {
+        messageHistories[model] = [];
+    } else {
+        // 如果没有指定模型，清除所有历史记录
+        Object.keys(messageHistories).forEach(key => {
+            messageHistories[key] = [];
+        });
+    }
 }
 
 export { sendToLinkAI, sendToClaude, sendToCeok, clearMessageHistory };
