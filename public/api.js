@@ -1,35 +1,49 @@
 const API_URL = '/api/chat';
 
-// 修改为每个模型独立的消息历史
-const messageHistories = {
-    'linkai': [],
-    'claude': [],
-    'ceok': []
-};
+// 修改消息历史存储结构，使用 localStorage
+const MESSAGE_HISTORY_KEY = 'chatMessageHistory';
+
+// 获取消息历史
+function getMessageHistory(model) {
+    const histories = JSON.parse(localStorage.getItem(MESSAGE_HISTORY_KEY) || '{}');
+    return histories[model] || [];
+}
+
+// 保存消息历史
+function saveMessageHistory(model, messages) {
+    const histories = JSON.parse(localStorage.getItem(MESSAGE_HISTORY_KEY) || '{}');
+    histories[model] = messages;
+    localStorage.setItem(MESSAGE_HISTORY_KEY, JSON.stringify(histories));
+}
 
 async function sendToLinkAI(message, sessionId) {
-    messageHistories.linkai.push({
+    const messages = getMessageHistory('linkai');
+    messages.push({
         role: "user",
         content: message
     });
-    
-    return sendToAI(messageHistories.linkai, 'linkai');
+    saveMessageHistory('linkai', messages);
+    return sendToAI(messages, 'linkai');
 }
 
 async function sendToClaude(message, sessionId) {
-    messageHistories.claude.push({
+    const messages = getMessageHistory('claude');
+    messages.push({
         role: "user",
         content: message
     });
-    return sendToAI(messageHistories.claude, 'claude');
+    saveMessageHistory('claude', messages);
+    return sendToAI(messages, 'claude');
 }
 
 async function sendToCeok(message, sessionId) {
-    messageHistories.ceok.push({
+    const messages = getMessageHistory('ceok');
+    messages.push({
         role: "user",
         content: message
     });
-    return sendToAI(messageHistories.ceok, 'ceok');
+    saveMessageHistory('ceok', messages);
+    return sendToAI(messages, 'ceok');
 }
 
 async function sendToAI(messages, model) {
@@ -85,10 +99,12 @@ async function sendToAI(messages, model) {
                     }
                     // 将AI的回复添加到对应模型的历史记录中
                     if (responseText) {
-                        messageHistories[model].push({
+                        const messages = getMessageHistory(model);
+                        messages.push({
                             role: "assistant",
                             content: responseText
                         });
+                        saveMessageHistory(model, messages);
                     }
                 } catch (error) {
                     console.error('Stream error:', error);
@@ -102,15 +118,16 @@ async function sendToAI(messages, model) {
     }
 }
 
-// 修改清除历史记录函数，可以指定清除特定模型的历史记录
+// 修改清除历史记录函数
 function clearMessageHistory(model = null) {
-    if (model && messageHistories[model]) {
-        messageHistories[model] = [];
+    if (model) {
+        // 清除指定模型的历史记录
+        const histories = JSON.parse(localStorage.getItem(MESSAGE_HISTORY_KEY) || '{}');
+        histories[model] = [];
+        localStorage.setItem(MESSAGE_HISTORY_KEY, JSON.stringify(histories));
     } else {
-        // 如果没有指定模型，清除所有历史记录
-        Object.keys(messageHistories).forEach(key => {
-            messageHistories[key] = [];
-        });
+        // 清除所有历史记录
+        localStorage.setItem(MESSAGE_HISTORY_KEY, '{}');
     }
 }
 

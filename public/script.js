@@ -1,7 +1,7 @@
 import { sendToLinkAI, sendToClaude, sendToCeok, clearMessageHistory } from './api.js';
 import { GameManager } from './games.js';
 
-// 删除所有其他的 DOMContentLoaded 事件监听器，只保留这一个
+// 修改主要的 DOMContentLoaded 事件监听器
 document.addEventListener('DOMContentLoaded', () => {
     // 获取所有需要的元素
     const chatBox = document.querySelector('.chat-box');
@@ -56,7 +56,84 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.focus();
     }
     
-    // 初始化事件监听
+    // 初始化模型选择器
+    const modelSelect = document.getElementById('modelSelect');
+    if (modelSelect) {
+        modelSelect.addEventListener('change', () => {
+            const newModel = modelSelect.value;
+            
+            // 保存选择的模型
+            localStorage.setItem('selectedModel', newModel);
+            
+            // 清除聊天界面
+            const chatMessages = document.getElementById('chatMessages');
+            while (chatMessages.firstChild) {
+                chatMessages.removeChild(chatMessages.firstChild);
+            }
+            
+            // 显示初始的系统消息
+            const systemMessage = document.createElement('div');
+            systemMessage.className = 'message system';
+            const systemMessageContent = document.createElement('div');
+            systemMessageContent.className = 'message-content';
+            systemMessageContent.textContent = '👋 你好！我是AI助手，很高兴为你服务。';
+            systemMessage.appendChild(systemMessageContent);
+            chatMessages.appendChild(systemMessage);
+            
+            // 加载选中模型的历史记录
+            const histories = JSON.parse(localStorage.getItem('chatMessageHistory') || '{}');
+            const modelHistory = histories[newModel] || [];
+            
+            // 显示历史消息
+            modelHistory.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${msg.role === 'user' ? 'user' : 'system'}`;
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                messageContent.textContent = msg.content;
+                messageDiv.appendChild(messageContent);
+                chatMessages.appendChild(messageDiv);
+            });
+        });
+        
+        // 恢复上次选择的模型
+        const savedModel = localStorage.getItem('selectedModel');
+        if (savedModel) {
+            modelSelect.value = savedModel;
+            // 触发 change 事件以加载历史记录
+            modelSelect.dispatchEvent(new Event('change'));
+        }
+    }
+    
+    // 修改清除按钮功能
+    const clearChatBtn = document.getElementById('clearChat');
+    if (clearChatBtn) {
+        clearChatBtn.addEventListener('click', () => {
+            const currentModel = modelSelect.value;
+            
+            // 清除聊天界面
+            const chatMessages = document.getElementById('chatMessages');
+            while (chatMessages.firstChild) {
+                chatMessages.removeChild(chatMessages.firstChild);
+            }
+            
+            // 显示初始的系统消息
+            const systemMessage = document.createElement('div');
+            systemMessage.className = 'message system';
+            const systemMessageContent = document.createElement('div');
+            systemMessageContent.className = 'message-content';
+            systemMessageContent.textContent = '👋 你好！我是AI助手，很高兴为你服务。';
+            systemMessage.appendChild(systemMessageContent);
+            chatMessages.appendChild(systemMessage);
+            
+            // 清除当前模型的历史记录
+            const histories = JSON.parse(localStorage.getItem('chatMessageHistory') || '{}');
+            histories[currentModel] = [];
+            localStorage.setItem('chatMessageHistory', JSON.stringify(histories));
+        });
+    }
+    
+    // 初始化聊天事件
     initChatEvents();
     initGameOptions();
     addReturnToMenuButtons();
@@ -71,67 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toggleGameBtn) toggleGameBtn.addEventListener('click', closeGame);
     if (openChatBtn) openChatBtn.addEventListener('click', openChat);
     if (toggleChatBtn) toggleChatBtn.addEventListener('click', closeChat);
-    
-    // 初始化模型选择器
-    const modelSelect = document.getElementById('modelSelect');
-    if (modelSelect) {
-        modelSelect.addEventListener('change', () => {
-            const previousModel = localStorage.getItem('selectedModel');
-            const newModel = modelSelect.value;
-            
-            // 保存新选择的模型
-            localStorage.setItem('selectedModel', newModel);
-            
-            // 清除聊天界面
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = '';
-            
-            // 只保留初始的系统消息
-            const systemMessage = document.createElement('div');
-            systemMessage.className = 'message system';
-            const systemMessageContent = document.createElement('div');
-            systemMessageContent.className = 'message-content';
-            systemMessageContent.textContent = '👋 你好！我是AI助手，很高兴为你服务。';
-            systemMessage.appendChild(systemMessageContent);
-            chatMessages.appendChild(systemMessage);
-            
-            // 清除之前模型的历史记录
-            if (previousModel) {
-                clearMessageHistory(previousModel);
-            }
-        });
-        
-        // 恢复上次选择的模型
-        const savedModel = localStorage.getItem('selectedModel');
-        if (savedModel) {
-            modelSelect.value = savedModel;
-        }
-    }
-    
-    // 添加清除按钮功能
-    const clearChatBtn = document.getElementById('clearChat');
-    if (clearChatBtn) {
-        clearChatBtn.addEventListener('click', () => {
-            // 获取当前选中的模型
-            const currentModel = modelSelect.value;
-            
-            // 清除聊天界面
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = '';
-            
-            // 只保留初始的系统消息
-            const systemMessage = document.createElement('div');
-            systemMessage.className = 'message system';
-            const systemMessageContent = document.createElement('div');
-            systemMessageContent.className = 'message-content';
-            systemMessageContent.textContent = '👋 你好！我是AI助手，很高兴为你服务。';
-            systemMessage.appendChild(systemMessageContent);
-            chatMessages.appendChild(systemMessage);
-            
-            // 清除当前模型的历史记录
-            clearMessageHistory(currentModel);
-        });
-    }
 });
 
 // 删除其他所有的 DOMContentLoaded 事件监听器
@@ -153,7 +169,7 @@ function openGame(e) {
     const footer = document.querySelector('footer');
     const gameMenu = document.querySelector('.game-menu');
     
-    // 确保聊天框是关闭的
+    // 确保聊天框是闭的
     if (chatBox) {
         chatBox.style.display = 'none';
         chatBox.classList.add('collapsed');
@@ -369,17 +385,32 @@ function initChatEvents() {
     });
 }
 
-// 修改���送消息函数
+// 在 script.js 文件中添加���息历史管理的函数
+function getMessageHistory(model) {
+    const histories = JSON.parse(localStorage.getItem('chatMessageHistory') || '{}');
+    return histories[model] || [];
+}
+
+function saveMessageHistory(model, messages) {
+    const histories = JSON.parse(localStorage.getItem('chatMessageHistory') || '{}');
+    histories[model] = messages;
+    localStorage.setItem('chatMessageHistory', JSON.stringify(histories));
+}
+
+// 修改 handleSendMessage 函数
 async function handleSendMessage() {
     const userInput = document.getElementById('userInput');
     const modelSelect = document.getElementById('modelSelect');
     const message = userInput.value.trim();
     const chatMessages = document.getElementById('chatMessages');
+    const currentModel = modelSelect.value;
     
     if (message) {
+        // 清空输入框
         userInput.value = '';
         userInput.style.height = 'auto';
         
+        // 添加用户消息到界面
         const userMessageDiv = document.createElement('div');
         userMessageDiv.className = 'message user';
         const userMessageContent = document.createElement('div');
@@ -388,11 +419,16 @@ async function handleSendMessage() {
         userMessageDiv.appendChild(userMessageContent);
         chatMessages.appendChild(userMessageDiv);
         
+        // 获取当前模型的消息历史
+        const histories = JSON.parse(localStorage.getItem('chatMessageHistory') || '{}');
+        const currentHistory = histories[currentModel] || [];
+        currentHistory.push({ role: 'user', content: message });
+        
         smoothScrollTo(chatMessages, chatMessages.scrollHeight);
         
         try {
             let response;
-            switch(modelSelect.value) {
+            switch(currentModel) {
                 case 'claude':
                     response = await sendToClaude(message, 'session-1');
                     break;
@@ -417,10 +453,14 @@ async function handleSendMessage() {
                 aiMessageContent.textContent = fullResponse;
                 smoothScrollTo(chatMessages, chatMessages.scrollHeight);
             }
+
+            // 保存AI回复到历���记录
+            currentHistory.push({ role: 'assistant', content: fullResponse });
+            histories[currentModel] = currentHistory;
+            localStorage.setItem('chatMessageHistory', JSON.stringify(histories));
+            
         } catch (error) {
             console.error('Error:', error);
-            // 发生错误时清除历史记录
-            clearMessageHistory();
             
             const errorMessageDiv = document.createElement('div');
             errorMessageDiv.className = 'message system';
@@ -559,7 +599,7 @@ function addReturnToMenuButtons() {
     games.forEach(game => {
         const returnButton = document.createElement('button');
         returnButton.classList.add('return-btn');
-        returnButton.innerHTML = '<i class="fas fa-arrow-left"></i> 返回菜单';
+        returnButton.innerHTML = '<i class="fas fa-arrow-left"></i> 返回单';
         returnButton.addEventListener('click', () => {
             // 隐藏当前游戏
             game.style.display = 'none';
@@ -1224,7 +1264,7 @@ function initSchulteGame() {
     // 添加键盘事件监听
     document.addEventListener('keydown', handleSpaceKey);
     
-    // 在游戏界面被隐藏时移除事件监听
+    // 在游戏面被隐藏时移除事件监听
     const schulteGame = document.getElementById('schulteGame');
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
