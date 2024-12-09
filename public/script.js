@@ -385,7 +385,7 @@ function initChatEvents() {
     });
 }
 
-// 在 script.js 文件中添加���息历史管理的函数
+// 在 script.js 文件中添加息历史管理的函数
 function getMessageHistory(model) {
     const histories = JSON.parse(localStorage.getItem('chatMessageHistory') || '{}');
     return histories[model] || [];
@@ -454,7 +454,7 @@ async function handleSendMessage() {
                 smoothScrollTo(chatMessages, chatMessages.scrollHeight);
             }
 
-            // 保存AI回复到历���记录
+            // 保存AI回复到历史记录
             currentHistory.push({ role: 'assistant', content: fullResponse });
             histories[currentModel] = currentHistory;
             localStorage.setItem('chatMessageHistory', JSON.stringify(histories));
@@ -607,7 +607,7 @@ function addReturnToMenuButtons() {
             gameMenu.style.display = 'flex';
         });
         
-        // 将返回按钮添加到游戏控制区
+        // 将返回按钮添加到游��控制区
         const controlsDiv = game.querySelector('.game-controls');
         controlsDiv.appendChild(returnButton);
     });
@@ -1336,6 +1336,7 @@ function initSchulteGame() {
     function updateTimer(time) {
         const minutes = Math.floor(time / 60000);
         const seconds = Math.floor((time % 60000) / 1000);
+        // 使用固定宽度的字符串格式化，避免数字跳动
         timerDisplay.textContent = 
             `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
@@ -1348,11 +1349,25 @@ function initSchulteGame() {
         startBtn.innerHTML = '<i class="fas fa-redo"></i><span>重置</span>';
         
         if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            if (isPlaying) {
-                updateTimer(Date.now() - startTime);
+        
+        // 使用 requestAnimationFrame 代替 setInterval 来更新计时器
+        let lastTime = Date.now();
+        function updateTime() {
+            if (!isPlaying) return;
+            
+            const currentTime = Date.now();
+            const deltaTime = currentTime - startTime;
+            
+            // 只在时间变化时更新显示
+            if (Math.floor(deltaTime / 1000) !== Math.floor((currentTime - lastTime) / 1000)) {
+                updateTimer(deltaTime);
+                lastTime = currentTime;
             }
-        }, 100);
+            
+            requestAnimationFrame(updateTime);
+        }
+        
+        requestAnimationFrame(updateTime);
     }
     
     // 停止游戏
